@@ -5,57 +5,84 @@
  */
 package event;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
-import javax.ws.rs.core.MediaType;
+import java.util.List;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+
 
 /**
  * REST Web Service
  *
  * @author AntonioBho
  */
-@Path("events")
+@Path("event")
 public class Event {
 
     @Context
     private UriInfo context;
-
+    private String type;
+    private String professor;
+    private String description;
+    private List<String> students;
+    private String data;
+    
     /**
      * Creates a new instance of Event
      */
     public Event() {
+        
     }
 
     /**
      * Retrieves representation of an instance of event.Event
      * @return an instance of java.lang.String
      */
+    //Mostra l'evento
     @GET
     @Produces("application/json")
     public String getJson() {
-        //TODO return proper representation object
-        throw new UnsupportedOperationException();
+        String pattern= "{ \"professor\":\"%s\", \"description\":\"%s\"}";
+        return String.format(pattern,professor,description);
     }
+    
+    //Modifica o Crea l'evento
+    @PUT
+   
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public String update(@QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof) {
+        description=de;
+        type=t;
+        data=da;
+        professor=prof;
+   String pattern = "{ \"professor\":\"%s\", \"description\":\"%s\", \"type\":\"%s\", \"data\": \"%s\"}";
+   return String.format(pattern,professor, description, type, data );   
+}
 
-    //Ritorna gli eventi associato a un docente
+    @POST
+    @Path("{post}")
+    @Produces("application/json")
+    public String create(){
+        
+        
+        
+        return null;
+    }
+    
+    
+    
+    //Ritorna gli studenti associato all'evento
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("{professorID}/")
     public Event getEvent(@PathParam("professorID") Long eventId) {
         
+    
         
-        
-        return null;
-        
-        
-        
+      return null;  
     }
+    
+    
+    
     /**
      * PUT method for updating or creating an instance of Event
      * @param content representation for the resource

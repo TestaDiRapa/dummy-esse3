@@ -41,4 +41,27 @@ public class Professor {
         return "{\"status\":\"ok\"}";
     }
 
+    @GET
+    @Path("myevents")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String myEvents(@QueryParam("username") String username, @QueryParam("password") String password){
+        if(username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(password == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+
+        MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
+
+        MongoCursor<Document> results = professors.find(Filters.eq("username", username)).iterator();
+        if(results.hasNext() && results.next().get("pwd").equals(password)){
+            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
+            String ret = "{\"status\":\"ok\", \"results\":[";
+            results = events.find(Filters.eq("professor", username)).iterator();
+            while(results.hasNext()){
+                ret += results.next().toString();
+                if(results.hasNext()) ret+= ',';
+            }
+            ret += "]}";
+            return ret;
+        }
+        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+    }
 }

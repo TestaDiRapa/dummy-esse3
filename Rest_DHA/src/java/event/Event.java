@@ -85,7 +85,7 @@ public class Event {
         if(da == null) return "{\"status\":\"error\", \"description\":\"data is a mandatory field\"}";
         if(prof == null) return "{\"status\":\"error\", \"description\":\"professor is a mandatory field\"}";
         Document document = new Document()
-                .append("eventID", eventID)
+                .append("_id", eventID)
                 .append("type", t)
                 .append("data", da)
                 .append("description", de)

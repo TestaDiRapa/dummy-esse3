@@ -40,5 +40,5 @@ public class Professor {
         collection.insertOne(document);
         return "{\"status\":\"ok\"}";
     }
-    
+
 }

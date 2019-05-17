@@ -54,7 +54,11 @@ public class Event {
         
         
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-//         MongoCursor<Document> result =  collection.
+        //Si deve fare una lista, students è presa solo per esempio
+        for (Document cur : collection.find()) {
+         students.add(cur.toJson());
+            }
+        
          //Qui deve sampare tutta la lista degli eventi mostrando solo professore e descrizione e eventuale ID        
         return null;
     }

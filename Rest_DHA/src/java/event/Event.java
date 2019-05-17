@@ -52,11 +52,11 @@ public class Event {
     @Produces("application/json")
     public String getJson() {
         
-        //Bisogna fare un'iterazione
-//        MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-//        MongoCursor<Document> result =  
-        String pattern= "{ \"professor\":\"%s\", \"description\":\"%s\"}";
-        return String.format(pattern,professor,description);
+        
+        MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
+//         MongoCursor<Document> result =  collection.
+         //Qui deve sampare tutta la lista degli eventi mostrando solo professore e descrizione e eventuale ID        
+        return null;
     }
     
     //Crea l'event o Modifica
@@ -69,6 +69,8 @@ public class Event {
         
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
         MongoCursor<Document> result = collection.find(Filters.eq("eventID", eventID)).iterator();
+        
+        
         //QUI SI MODIFICA
         if(result.hasNext()) return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
         
@@ -88,11 +90,12 @@ public class Event {
         return "{\"status\":\"ok\"}";  
 }
 
-    //Restituisce i partecipanti
+    //Restituisce i partecipanti dato l'id degli eventi
     @GET
-    @Path("/participants")
+    @Path("{eventID}/participants")
     @Produces("application/json")
-    public String participant(){
+    public String participant(@PathParam("eventID") String eventID){
+        MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
         return String.format(" %s ", students);
        
     }

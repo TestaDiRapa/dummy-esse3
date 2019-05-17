@@ -2,3 +2,9 @@
 Rest_DHA/nbproject/
 Rest_DHA/web/
 Rest_DHA/build.xml
+
+#IntelliJ files
+Rest_DHA/.idea
+Rest_DHA/web
+Rest_DHA/dummy-esse3.iml
+

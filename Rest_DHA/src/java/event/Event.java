@@ -45,51 +45,28 @@ public class Event {
         return String.format(pattern,professor,description);
     }
     
-    //Modifica o Crea l'evento
+    //Modifica o Crea l'event
     @PUT
-   
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    //Quello tra () viene usato nella url mentre dopo il tipo nel codice
     public String update(@QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof) {
         description=de;
         type=t;
         data=da;
         professor=prof;
-   String pattern = "{ \"professor\":\"%s\", \"description\":\"%s\", \"type\":\"%s\", \"data\": \"%s\"}";
-   return String.format(pattern,professor, description, type, data );   
+        String pattern = "{\"status\":\"%s\", \"professor\":\"%s\", \"description\":\"%s\", \"type\":\"%s\", \"data\": \"%s\"}";
+        return String.format(pattern,"OK",professor, description, type, data );   
 }
 
-    @POST
-    @Path("{post}")
-    @Produces("application/json")
-    public String create(){
-        
-        
-        
-        return null;
-    }
-    
-    
-    
-    //Ritorna gli studenti associato all'evento
+    //Restituisce i partecipanti
     @GET
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    @Path("{professorID}/")
-    public Event getEvent(@PathParam("professorID") Long eventId) {
-        
-    
-        
-      return null;  
+    @Path("/participants")
+    @Produces("application/json")
+    public String participant(){
+        return String.format(" %s ", students);
+       
     }
     
     
-    
-    /**
-     * PUT method for updating or creating an instance of Event
-     * @param content representation for the resource
-     * @return an HTTP response with content of the updated or created resource.
-     */
-    @PUT
-    @Consumes("application/json")
-    public void putJson(String content) {
-    }
+  
 }

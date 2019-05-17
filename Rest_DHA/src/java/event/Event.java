@@ -54,8 +54,8 @@ public class Event {
         type=t;
         data=da;
         professor=prof;
-   String pattern = "{ \"professor\":\"%s\", \"description\":\"%s\", \"type\":\"%s\", \"data\": \"%s\"}";
-   return String.format(pattern,professor, description, type, data );   
+        String pattern = "{\"status\":\"%s\", \"professor\":\"%s\", \"description\":\"%s\", \"type\":\"%s\", \"data\": \"%s\"}";
+        return String.format(pattern,"OK",professor, description, type, data );   
 }
 
     //Restituisce i partecipanti
@@ -63,8 +63,7 @@ public class Event {
     @Path("/participants")
     @Produces("application/json")
     public String participant(){
-        return null;
-       // return String.format(" %s ", students);
+        return String.format(" %s ", students);
        
     }
     

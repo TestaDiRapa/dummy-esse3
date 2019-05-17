@@ -74,6 +74,7 @@ public class Event {
         //QUI SI MODIFICA
         if(result.hasNext()) return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
         
+        
         //QUI SI CREA
         if(de == null) return "{\"status\":\"error\", \"description\":\"description is a mandatory field\"}";
         if(t == null) return "{\"status\":\"error\", \"description\":\"type is a mandatory field\"}";
@@ -84,7 +85,8 @@ public class Event {
                 .append("type", t)
                 .append("data", da)
                 .append("description", de)
-                .append("professor", prof);
+                .append("professor", prof)
+                .append("participants", students);
 
         collection.insertOne(document);
         return "{\"status\":\"ok\"}";  

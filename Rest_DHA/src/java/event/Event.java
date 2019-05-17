@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PUT;
+import javax.ws.rs.core.MediaType;
 
 /**
  * REST Web Service
@@ -42,6 +43,19 @@ public class Event {
         throw new UnsupportedOperationException();
     }
 
+    //Ritorna gli eventi associato a un docente
+    @GET
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("{professorID}/")
+    public Event getEvent(@PathParam("professorID") Long eventId) {
+        
+        
+        
+        return null;
+        
+        
+        
+    }
     /**
      * PUT method for updating or creating an instance of Event
      * @param content representation for the resource

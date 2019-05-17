@@ -10,10 +10,17 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
+
+import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import payloads.StandardUserPayload;
 
 
 /**
@@ -32,7 +39,7 @@ public class Event {
     private String type;
     private String professor;
     private String description;
-    private List<String> students;
+    private List<String> students = new ArrayList<>(), studentsToBeConfirmed = new ArrayList<>();
     private String data;
     private String id; //data+description
     
@@ -51,16 +58,22 @@ public class Event {
     @GET
     @Produces("application/json")
     public String getJson() {
-        
-        
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        //Si deve fare una lista, students è presa solo per esempio
-        for (Document cur : collection.find()) {
-         students.add(cur.toJson());
-            }
-        
-         //Qui deve sampare tutta la lista degli eventi mostrando solo professore e descrizione e eventuale ID        
-        return null;
+
+        String ret = "{\"status\":\"ok\", \"events\":[";
+
+        MongoCursor<Document> results = collection.find().iterator();
+
+        while(results.hasNext()){
+            Document tmp = results.next();
+            ret += String.format("{\"id\":\"%s\", \"professor\":\"%s\", \"description\":\"%s\"}",
+                    tmp.get("_id"), tmp.get("professor"), tmp.get("description"));
+            if(results.hasNext()) ret += ",";
+        }
+
+        ret += "]}";
+
+        return ret;
     }
     
     //Crea l'event o Modifica
@@ -90,7 +103,8 @@ public class Event {
                 .append("data", da)
                 .append("description", de)
                 .append("professor", prof)
-                .append("participants", students);
+                .append("participants", students)
+                .append("not_confirmed", studentsToBeConfirmed);
 
         collection.insertOne(document);
         return "{\"status\":\"ok\"}";  
@@ -105,7 +119,34 @@ public class Event {
         return String.format(" %s ", students);
        
     }
-    
+
+    @POST
+    @Path("{eventID}/participate")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public String participate(@PathParam("eventID") String eventID, StandardUserPayload payload){
+        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+
+        MongoCollection<Document> students = mongoClient.getDatabase("esse3").getCollection("students");
+        MongoCursor<Document> results = students.find(Filters.eq("username", payload.username)).iterator();
+
+        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
+
+            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
+
+            Bson filter = Filters.eq("_id", eventID);
+            Bson push = Updates.push("not_confirmed", payload.username);
+
+            if(events.updateOne(filter, push).getModifiedCount() == 0){
+                return "{\"status\":\"error\", \"description\":\"no event with the specified id\"}";
+            }
+            else return "{\"status\":\"ok\"}";
+
+        }
+        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+    }
+
     
   
 }

@@ -1,10 +1,10 @@
-package professors.payloads;
+package payloads;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class ProfessorRegistrationPayload {
+public class StandardUserPayload {
 
     @XmlElement public String name;
     @XmlElement public String surname;

@@ -6,7 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
-import professors.payloads.ProfessorRegistrationPayload;
+import payloads.StandardUserPayload;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -20,7 +20,7 @@ public class Professor {
     @Path("register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String register(ProfessorRegistrationPayload payload){
+    public String register(StandardUserPayload payload){
         if(payload.name == null) return "{\"status\":\"error\", \"description\":\"name is a mandatory field\"}";
         if(payload.surname == null) return "{\"status\":\"error\", \"description\":\"surname is a mandatory field\"}";
         if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
@@ -42,9 +42,9 @@ public class Professor {
     }
 
     @GET
-    @Path("myevents")
+    @Path("{username}/myevents")
     @Produces(MediaType.APPLICATION_JSON)
-    public String myEvents(@QueryParam("username") String username, @QueryParam("password") String password){
+    public String myEvents(@PathParam("username") String username, @QueryParam("password") String password){
         if(username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
         if(password == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
 

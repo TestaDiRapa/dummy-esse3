@@ -65,15 +65,18 @@ public class Event {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     //Quello tra () viene usato nella url mentre dopo il tipo nel codice
     public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof) {
+       
+        
+        MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
+        MongoCursor<Document> result = collection.find(Filters.eq("eventID", eventID)).iterator();
+        //QUI SI MODIFICA
+        if(result.hasNext()) return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
+        
+        //QUI SI CREA
         if(de == null) return "{\"status\":\"error\", \"description\":\"description is a mandatory field\"}";
         if(t == null) return "{\"status\":\"error\", \"description\":\"type is a mandatory field\"}";
         if(da == null) return "{\"status\":\"error\", \"description\":\"data is a mandatory field\"}";
         if(prof == null) return "{\"status\":\"error\", \"description\":\"professor is a mandatory field\"}";
-        
-        MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        MongoCursor<Document> result = collection.find(Filters.eq("eventID", eventID)).iterator();
-        if(result.hasNext()) return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
-
         Document document = new Document()
                 .append("eventID", eventID)
                 .append("type", t)

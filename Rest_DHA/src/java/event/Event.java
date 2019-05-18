@@ -75,6 +75,23 @@ public class Event {
         return ret;
     }
     
+    
+    //Restituisce la descrizione dato l'id
+    @GET
+    @Path ("/{eventID}")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})    
+    public String eventDescription(@PathParam("eventID") String eventID){
+        
+        MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
+        MongoCursor<Document> results = collection.find(Filters.eq("_id", eventID)).iterator();
+        
+        if (results.hasNext()){
+            return String.format("{\"status\":\"ok\", \"description\":\"%s\"}", results.next().get("description"));
+        }
+       return "{\"status\":\"error\", \"description\":\"Event ID  doesn't exist\"}"; 
+       
+    }
+    
     //Crea l'event o Modifica
     @PUT
     @Path ("/{eventID}")
@@ -98,8 +115,11 @@ public class Event {
         
         //QUI SI MODIFICA
         if(result.hasNext()){
-            if(i==0) return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
-            
+           if(i==0)  return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
+                
+                
+                
+                
             
 //            Bson filter = Filters.eq("_id", eventID);
 //            Bson push = Updates.push(prof, filter);
@@ -110,7 +130,7 @@ public class Event {
         
         
         //QUI SI CREA
-        if(i==4){
+        if(i==0){
         Document document = new Document()
                 .append("_id", eventID)
                 .append("type", t)

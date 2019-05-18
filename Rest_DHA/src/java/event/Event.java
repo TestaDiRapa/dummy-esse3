@@ -17,7 +17,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 
 import com.mongodb.client.model.Updates;
-import com.mongodb.client.result.UpdateResult;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -39,12 +38,12 @@ public class Event {
 
     @Context
     private UriInfo context;
-    private String type;
-    private String professor;
-    private String description;
+//    private String type;
+//    private String professor;
+//    private String description;
     private List<String> students = new ArrayList<>(), studentsToBeConfirmed = new ArrayList<>();
-    private String data;
-    private String id; //data+description
+//    private String data;
+//    private String id; 
     
     /**
      * Creates a new instance of Event
@@ -92,7 +91,11 @@ public class Event {
         
         
         //QUI SI MODIFICA
-        if(result.hasNext()) return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
+        if(result.hasNext()){
+            
+            
+            return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
+        }
         
         
         //QUI SI CREA
@@ -118,11 +121,19 @@ public class Event {
     @Path("{eventID}/participants")
     @Produces("application/json")
     public String participant(@PathParam("eventID") String eventID){
+        
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        return String.format(" %s ", students);
+        MongoCursor<Document> results = collection.find(Filters.eq("_id", eventID)).iterator();
+        
+        if (results.hasNext()){
+            return String.format("{\"status\":\"ok\", \"participants\":\"%s\"}", results.next().get("participants"));
+        }
+       return "{\"status\":\"error\", \"description\":\"Event ID  doesn't exist\"}"; 
        
     }
 
+    
+    
     @POST
     @Path("{eventID}/participate")
     @Consumes("application/json")

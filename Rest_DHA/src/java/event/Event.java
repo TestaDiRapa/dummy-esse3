@@ -100,37 +100,42 @@ public class Event {
     public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof) {
        
         int i = 0;
-//        if(de == null) return "{\"status\":\"error\", \"description\":\"description is a mandatory field\"}";
-//        if(t == null) return "{\"status\":\"error\", \"description\":\"type is a mandatory field\"}";
-//        if(da == null) return "{\"status\":\"error\", \"description\":\"data is a mandatory field\"}";
-//        if(prof == null) return "{\"status\":\"error\", \"description\":\"professor is a mandatory field\"}";
+
         if(de != null) i++;
         if(t != null) i++;
         if(da != null) i++;
         if(prof != null) i++;
         
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        MongoCursor<Document> result = collection.find(Filters.eq("eventID", eventID)).iterator();
+        MongoCursor<Document> result = collection.find(Filters.eq("_id", eventID)).iterator();
         
         
         //QUI SI MODIFICA
         if(result.hasNext()){
+      
            if(i==0)  return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
-                
-                
-                
-                
-            
-//            Bson filter = Filters.eq("_id", eventID);
-//            Bson push = Updates.push(prof, filter);
+            Bson filter = Filters.eq("_id", eventID);
             
             
+            if(de!=null){ 
+            Bson push = Updates.push("description", de);
+            collection.updateOne(filter, push);
+            }
+            if(t!=null){ 
+            Bson push = Updates.push("type", t);
+            collection.updateOne(filter, push);
+            }
+            if(da!=null){ 
+            Bson push = Updates.push("data", da);
+            collection.updateOne(filter, push);
+            }
+       
             return "{\"status\":\"error\", \"description\":\"Event modified\"}";
         }
         
         
         //QUI SI CREA
-        if(i==0){
+        if(i==4){
         Document document = new Document()
                 .append("_id", eventID)
                 .append("type", t)

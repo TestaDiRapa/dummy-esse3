@@ -118,15 +118,15 @@ public class Event {
             
             
             if(de!=null){ 
-            Bson push = Updates.push("description", de);
+            Bson push = Updates.set("description", de);
             collection.updateOne(filter, push);
             }
             if(t!=null){ 
-            Bson push = Updates.push("type", t);
+            Bson push = Updates.set("type", t);
             collection.updateOne(filter, push);
             }
             if(da!=null){ 
-            Bson push = Updates.push("data", da);
+            Bson push = Updates.set("data", da);
             collection.updateOne(filter, push);
             }
        

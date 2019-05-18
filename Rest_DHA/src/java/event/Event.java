@@ -38,12 +38,8 @@ public class Event {
 
     @Context
     private UriInfo context;
-//    private String type;
-//    private String professor;
-//    private String description;
     private List<String> students = new ArrayList<>(), studentsToBeConfirmed = new ArrayList<>();
-//    private String data;
-//    private String id; 
+
     
     /**
      * Creates a new instance of Event
@@ -52,11 +48,12 @@ public class Event {
         
     }
 
+     //Mostra eventi
     /**
      * Retrieves representation of an instance of event.Event
      * @return an instance of java.lang.String
      */
-    //Mostra eventi
+   
     @GET
     @Produces("application/json")
     public String getJson() {
@@ -85,6 +82,15 @@ public class Event {
     //Quello tra () viene usato nella url mentre dopo il tipo nel codice
     public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof) {
        
+        int i = 0;
+//        if(de == null) return "{\"status\":\"error\", \"description\":\"description is a mandatory field\"}";
+//        if(t == null) return "{\"status\":\"error\", \"description\":\"type is a mandatory field\"}";
+//        if(da == null) return "{\"status\":\"error\", \"description\":\"data is a mandatory field\"}";
+//        if(prof == null) return "{\"status\":\"error\", \"description\":\"professor is a mandatory field\"}";
+        if(de != null) i++;
+        if(t != null) i++;
+        if(da != null) i++;
+        if(prof != null) i++;
         
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
         MongoCursor<Document> result = collection.find(Filters.eq("eventID", eventID)).iterator();
@@ -92,17 +98,19 @@ public class Event {
         
         //QUI SI MODIFICA
         if(result.hasNext()){
+            if(i==0) return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
             
             
-            return "{\"status\":\"error\", \"description\":\"Event ID  already exists\"}";
+//            Bson filter = Filters.eq("_id", eventID);
+//            Bson push = Updates.push(prof, filter);
+            
+            
+            return "{\"status\":\"error\", \"description\":\"Event modified\"}";
         }
         
         
         //QUI SI CREA
-        if(de == null) return "{\"status\":\"error\", \"description\":\"description is a mandatory field\"}";
-        if(t == null) return "{\"status\":\"error\", \"description\":\"type is a mandatory field\"}";
-        if(da == null) return "{\"status\":\"error\", \"description\":\"data is a mandatory field\"}";
-        if(prof == null) return "{\"status\":\"error\", \"description\":\"professor is a mandatory field\"}";
+        if(i==4){
         Document document = new Document()
                 .append("_id", eventID)
                 .append("type", t)
@@ -112,8 +120,10 @@ public class Event {
                 .append("participants", students)
                 .append("not_confirmed", studentsToBeConfirmed);
 
-        collection.insertOne(document);
-        return "{\"status\":\"ok\"}";  
+            collection.insertOne(document);
+            return "{\"status\":\"ok\"}";  
+        }
+        return "{\"status\":\"error\", \"description\":\"Event not creat because mandatory field\"}";
 }
 
     //Restituisce i partecipanti dato l'id degli eventi

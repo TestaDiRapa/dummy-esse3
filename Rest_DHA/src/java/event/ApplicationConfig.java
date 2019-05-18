@@ -31,6 +31,7 @@ public class ApplicationConfig extends Application {
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(event.Event.class);
         resources.add(professors.Professor.class);
+        resources.add(students.Student.class);
     }
     
 }

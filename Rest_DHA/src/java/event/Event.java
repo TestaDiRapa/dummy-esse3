@@ -98,7 +98,7 @@ public class Event {
     @Path ("/{eventID}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     //Quello tra () viene usato nella url mentre dopo il tipo nel codice
-    public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof) {
+    public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof, @QueryParam("password") String pwd) {
        
         int i = 0;
 
@@ -107,11 +107,18 @@ public class Event {
         if(da != null) i++;
         if(prof != null) i++;
         
+        if(prof == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+
+        MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
+        MongoCursor<Document> results = professors.find(Filters.eq("username", prof)).iterator();
+        if(results.hasNext() && results.next().get("pwd").equals(pwd)){
+
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
         MongoCursor<Document> result = collection.find(Filters.eq("_id", eventID)).iterator();
         
         
-        //QUI SI MODIFICA
+        //QUI SI MODIFICA, Se si modifica si deve fare un controllo se l'evento è del prof
         if(result.hasNext()){
       
            if(i==0)  return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
@@ -135,7 +142,7 @@ public class Event {
         }
         
         
-        //QUI SI CREA
+        //QUI SI CREA, Si deve associare l'evento al professoere
         if(i==4){
         Document document = new Document()
                 .append("_id", eventID)
@@ -150,6 +157,8 @@ public class Event {
             return "{\"status\":\"ok\"}";  
         }
         return "{\"status\":\"error\", \"description\":\"Event not creat because mandatory field\"}";
+        }
+        else return "{\"status\":\"error\", \"description\":\"Password error\"}";
 }
 
     //Restituisce i partecipanti dato l'id degli eventi

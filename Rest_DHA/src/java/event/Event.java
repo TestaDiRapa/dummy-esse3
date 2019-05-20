@@ -239,7 +239,7 @@ public class Event {
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
         MongoCursor<Document> results = professors.find(Filters.eq("username", payload.username)).iterator();
-//        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
+        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
 //
 //            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
 //
@@ -255,9 +255,10 @@ public class Event {
 //                return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
 //            }
 //            else return "{\"status\":\"ok\"}";
-//        }
-//        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+            
             return null;
+        }
+        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
             
     }
     

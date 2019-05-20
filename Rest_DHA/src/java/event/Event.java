@@ -22,6 +22,7 @@ import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import payloads.ConfirmationPayload;
+import payloads.DeletionPayload;
 import payloads.StandardUserPayload;
 
 
@@ -226,4 +227,39 @@ public class Event {
         }
         else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
     }
+    
+    
+    @POST
+    @Path("{eventID}/delete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String eventDelete(@PathParam("eventID") String eventID, DeletionPayload payload){
+        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+
+        MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
+        MongoCursor<Document> results = professors.find(Filters.eq("username", payload.username)).iterator();
+//        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
+//
+//            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
+//
+//
+//            BsonDocument filter = new BsonDocument();
+//            filter.append("_id", new BsonString(eventID));
+//            filter.append("professor", new BsonString(payload.username));
+
+//            Bson push = Updates.push("not_confirmed", payload.student);
+//            Bson pull = Updates.pull("participants", payload.student);
+//
+//            if(events.updateOne(filter, push).getModifiedCount() == 0 || events.updateOne(filter, pull).getModifiedCount() == 0){
+//                return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
+//            }
+//            else return "{\"status\":\"ok\"}";
+//        }
+//        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+            return null;
+            
+    }
+    
+    
 }

@@ -10,6 +10,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Filters.and;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,6 @@ import payloads.ConfirmationPayload;
 import payloads.DeletionPayload;
 import payloads.StandardUserPayload;
 
-
 /**
  * REST Web Service
  *
@@ -34,27 +34,25 @@ import payloads.StandardUserPayload;
 @Path("event")
 public class Event {
 
-    
     public MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://dhagroup:glassfish@45.76.47.94/esse3"));
 
     @Context
     private UriInfo context;
     private List<String> students = new ArrayList<>(), studentsToBeConfirmed = new ArrayList<>();
 
-    
     /**
      * Creates a new instance of Event
      */
     public Event() {
-        
+
     }
 
-     //Mostra eventi
+    //Mostra eventi
     /**
      * Retrieves representation of an instance of event.Event
+     *
      * @return an instance of java.lang.String
      */
-   
     @GET
     @Produces("application/json")
     public String getJson() {
@@ -64,163 +62,193 @@ public class Event {
 
         MongoCursor<Document> results = collection.find().iterator();
 
-        while(results.hasNext()){
+        while (results.hasNext()) {
             Document tmp = results.next();
             ret += String.format("{\"id\":\"%s\", \"professor\":\"%s\", \"description\":\"%s\"}",
                     tmp.get("_id"), tmp.get("professor"), tmp.get("description"));
-            if(results.hasNext()) ret += ",";
+            if (results.hasNext()) {
+                ret += ",";
+            }
         }
 
         ret += "]}";
 
         return ret;
     }
-    
-    
+
     //Restituisce la descrizione dato l'id
     @GET
-    @Path ("/{eventID}")
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})    
-    public String eventDescription(@PathParam("eventID") String eventID){
-        
+    @Path("/{eventID}")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public String eventDescription(@PathParam("eventID") String eventID) {
+
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
         MongoCursor<Document> results = collection.find(Filters.eq("_id", eventID)).iterator();
-        
-        if (results.hasNext()){
+
+        if (results.hasNext()) {
             return String.format("{\"status\":\"ok\", \"description\":\"%s\"}", results.next().get("description"));
         }
-       return "{\"status\":\"error\", \"description\":\"Event ID  doesn't exist\"}"; 
-       
+        return "{\"status\":\"error\", \"description\":\"Event ID  doesn't exist\"}";
+
     }
-    
+
     //Crea l'event o Modifica
     @PUT
-    @Path ("/{eventID}")
+    @Path("/{eventID}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     //Quello tra () viene usato nella url mentre dopo il tipo nel codice
-    public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data")  String da, @QueryParam("professor") String prof, @QueryParam("password") String pwd) {
-       
+    public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data") String da, @QueryParam("professor") String prof, @QueryParam("password") String pwd) {
+
         int i = 0;
 
-        if(de != null) i++;
-        if(t != null) i++;
-        if(da != null) i++;
-        if(prof != null) i++;
-        
-        if(prof == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
-        if(pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        if (de != null) {
+            i++;
+        }
+        if (t != null) {
+            i++;
+        }
+        if (da != null) {
+            i++;
+        }
+
+        if (prof == null) {
+            return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        }
+        if (pwd == null) {
+            return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        }
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
         MongoCursor<Document> results = professors.find(Filters.eq("username", prof)).iterator();
-        if(results.hasNext() && results.next().get("pwd").equals(pwd)){
 
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        MongoCursor<Document> result = collection.find(Filters.eq("_id", eventID)).iterator();
-        
-        
-        //QUI SI MODIFICA, Se si modifica si deve fare un controllo se l'evento è del prof
-        if(result.hasNext()){
-      
-           if(i==0)  return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
-            Bson filter = Filters.eq("_id", eventID);
-            
-            
-            if(de!=null){ 
-            Bson push = Updates.set("description", de);
-            collection.updateOne(filter, push);
-            }
-            if(t!=null){ 
-            Bson push = Updates.set("type", t);
-            collection.updateOne(filter, push);
-            }
-            if(da!=null){ 
-            Bson push = Updates.set("data", da);
-            collection.updateOne(filter, push);
-            }
-       
-            return "{\"status\":\"error\", \"description\":\"Event modified\"}";
-        }
-        
-        
-        //QUI SI CREA, Si deve associare l'evento al professoere
-        if(i==4){
-        Document document = new Document()
-                .append("_id", eventID)
-                .append("type", t)
-                .append("data", da)
-                .append("description", de)
-                .append("professor", prof)
-                .append("participants", students)
-                .append("not_confirmed", studentsToBeConfirmed);
+        MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", prof))).iterator();
 
-            collection.insertOne(document);
-            return "{\"status\":\"ok\"}";  
+        if (results.hasNext() && results.next().get("pwd").equals(pwd)) {
+            //QUI SI MODIFICA, Se si modifica si deve fare un controllo se l'evento è del prof
+            if (result2.hasNext()) {
+
+                if (i == 0) {
+                    return "{\"status\":\"error\", \"description\":\"Event unmodified\"}";
+                }
+                Bson filter = Filters.eq("_id", eventID);
+
+                if (de != null) {
+                    Bson push = Updates.set("description", de);
+                    collection.updateOne(filter, push);
+                }
+                if (t != null) {
+                    Bson push = Updates.set("type", t);
+                    collection.updateOne(filter, push);
+                }
+                if (da != null) {
+                    Bson push = Updates.set("data", da);
+                    collection.updateOne(filter, push);
+                }
+
+                return "{\"status\":\"error\", \"description\":\"Event modified\"}";
+
+            }
+
+            //QUI SI CREA, Si deve associare l'evento al professoere
+            MongoCursor<Document> result = collection.find(Filters.eq("_id", eventID)).iterator();
+            if (!result.hasNext()) {
+                if (i == 3) {
+
+                    Document document = new Document()
+                            .append("_id", eventID)
+                            .append("type", t)
+                            .append("data", da)
+                            .append("description", de)
+                            .append("professor", prof)
+                            .append("participants", students)
+                            .append("not_confirmed", studentsToBeConfirmed);
+
+                    collection.insertOne(document);
+                    return "{\"status\":\"ok\"}";
+                } else {
+                    return "{\"status\":\"error\", \"description\":\"Event not creat because mandatory field\"}";
+                }
+
+            } else {
+                return "{\"status\":\"error\", \"description\":\"Event ID already used\"}";
+            }
+
+        } else {
+            return "{\"status\":\"error\", \"description\":\"Password error\"}";
         }
-        return "{\"status\":\"error\", \"description\":\"Event not creat because mandatory field\"}";
-        }
-        else return "{\"status\":\"error\", \"description\":\"Password error\"}";
-}
+
+    }
 
     //Restituisce i partecipanti dato l'id degli eventi
     @GET
     @Path("{eventID}/participants")
     @Produces("application/json")
-    public String participant(@PathParam("eventID") String eventID){
-        
+    public String participant(@PathParam("eventID") String eventID) {
+
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
         MongoCursor<Document> results = collection.find(Filters.eq("_id", eventID)).iterator();
-        
-        if (results.hasNext()){
+
+        if (results.hasNext()) {
             return String.format("{\"status\":\"ok\", \"participants\":\"%s\"}", results.next().get("participants"));
         }
-       return "{\"status\":\"error\", \"description\":\"Event ID  doesn't exist\"}"; 
-       
+        return "{\"status\":\"error\", \"description\":\"Event ID  doesn't exist\"}";
+
     }
 
-    
-    
     @POST
     @Path("{eventID}/participate")
     @Consumes("application/json")
     @Produces("application/json")
-    public String participate(@PathParam("eventID") String eventID, StandardUserPayload payload){
-        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
-        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+    public String participate(@PathParam("eventID") String eventID, StandardUserPayload payload) {
+        if (payload.username == null) {
+            return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        }
+        if (payload.pwd == null) {
+            return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        }
 
         MongoCollection<Document> students = mongoClient.getDatabase("esse3").getCollection("students");
         MongoCursor<Document> results = students.find(Filters.eq("username", payload.username)).iterator();
 
-        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
+        if (results.hasNext() && results.next().get("pwd").equals(payload.pwd)) {
 
             MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
 
             Bson filter = Filters.eq("_id", eventID);
             Bson push = Updates.push("not_confirmed", payload.username);
 
-            if(events.updateOne(filter, push).getModifiedCount() == 0){
+            if (events.updateOne(filter, push).getModifiedCount() == 0) {
                 return "{\"status\":\"error\", \"description\":\"no event with the specified id\"}";
+            } else {
+                return "{\"status\":\"ok\"}";
             }
-            else return "{\"status\":\"ok\"}";
 
+        } else {
+            return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
         }
-        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
     }
 
     @POST
     @Path("{eventID}/confirmstudent")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String confirmStudent(@PathParam("eventID") String eventID, ConfirmationPayload payload){
-        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
-        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
-        if(payload.student == null) return "{\"status\":\"error\", \"description\":\"student is a mandatory field\"}";
+    public String confirmStudent(@PathParam("eventID") String eventID, ConfirmationPayload payload) {
+        if (payload.username == null) {
+            return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        }
+        if (payload.pwd == null) {
+            return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        }
+        if (payload.student == null) {
+            return "{\"status\":\"error\", \"description\":\"student is a mandatory field\"}";
+        }
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
         MongoCursor<Document> results = professors.find(Filters.eq("username", payload.username)).iterator();
-        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
+        if (results.hasNext() && results.next().get("pwd").equals(payload.pwd)) {
 
             MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
-
 
             BsonDocument filter = new BsonDocument();
             filter.append("_id", new BsonString(eventID));
@@ -229,47 +257,49 @@ public class Event {
             Bson push = Updates.push("not_confirmed", payload.student);
             Bson pull = Updates.pull("participants", payload.student);
 
-            if(events.updateOne(filter, push).getModifiedCount() == 0 || events.updateOne(filter, pull).getModifiedCount() == 0){
+            if (events.updateOne(filter, push).getModifiedCount() == 0 || events.updateOne(filter, pull).getModifiedCount() == 0) {
                 return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
+            } else {
+                return "{\"status\":\"ok\"}";
             }
-            else return "{\"status\":\"ok\"}";
+        } else {
+            return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
         }
-        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
     }
-    
-    
+
     @POST
     @Path("{eventID}/delete")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String eventDelete(@PathParam("eventID") String eventID, DeletionPayload payload){
-        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
-        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+    public String eventDelete(@PathParam("eventID") String eventID, DeletionPayload payload) {
+        if (payload.username == null) {
+            return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        }
+        if (payload.pwd == null) {
+            return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        }
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
         MongoCursor<Document> results = professors.find(Filters.eq("username", payload.username)).iterator();
-        if(results.hasNext() && results.next().get("pwd").equals(payload.pwd)){
-//
-//            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
-//
-//
-//            BsonDocument filter = new BsonDocument();
-//            filter.append("_id", new BsonString(eventID));
-//            filter.append("professor", new BsonString(payload.username));
+        if (results.hasNext() && results.next().get("pwd").equals(payload.pwd)) {
+            
+             MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
+        MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", payload.username))).iterator();
 
-//            Bson push = Updates.push("not_confirmed", payload.student);
-//            Bson pull = Updates.pull("participants", payload.student);
-//
-//            if(events.updateOne(filter, push).getModifiedCount() == 0 || events.updateOne(filter, pull).getModifiedCount() == 0){
-//                return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
-//            }
-//            else return "{\"status\":\"ok\"}";
+        if(result2.hasNext()){
+            collection.deleteOne( result2.next() );
             
-            return null;
+            
+            return "{\"status\":\"ok\"}";
         }
-        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+
+          else      return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
+           
             
+        } else {
+            return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+        }
+
     }
-    
-    
+
 }

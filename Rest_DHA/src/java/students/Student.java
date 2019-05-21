@@ -51,15 +51,6 @@ public class Student {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * PUT method for updating or creating an instance of Student
-     * @param content representation for the resource
-     */
-    @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void putJson(String content) {
-    }
-    
     @PUT
     @Path("register")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -84,29 +75,6 @@ public class Student {
         
         collection.insertOne(documento);
         return "{\"status\":\"ok\"}";
-        
-    }
-    
-    @GET
-    @Path("{username}/eventlist")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String showEvents(){
-        
-        
-        MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
-            String ret = "{\"status\":\"ok\", \"events\":[";
-            MongoCursor<Document> results = events.find().iterator();
-            
-            while(results.hasNext()){
-            Document tmp = results.next();
-            ret += String.format("{\"id\":\"%s\", \"professor\":\"%s\", \"description\":\"%s\"}",
-                    tmp.get("_id"), tmp.get("professor"), tmp.get("description"));
-            if(results.hasNext()) ret += ",";            
-            }
-
-                ret += "]}";
-            
-        return ret;
         
     }
     

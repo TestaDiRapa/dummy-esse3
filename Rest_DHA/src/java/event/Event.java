@@ -11,6 +11,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.elemMatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import payloads.ConfirmationPayload;
 import payloads.DeletionPayload;
+import payloads.EventPayload;
 import payloads.StandardUserPayload;
 
 /**
@@ -53,6 +55,7 @@ public class Event {
      *
      * @return an instance of java.lang.String
      */
+    @Path("/")
     @GET
     @Produces("application/json")
     public String getJson() {
@@ -95,36 +98,37 @@ public class Event {
     //Crea l'event o Modifica
     @PUT
     @Path("/{eventID}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     //Quello tra () viene usato nella url mentre dopo il tipo nel codice
-    public String update(@PathParam("eventID") String eventID, @QueryParam("description") String de, @QueryParam("type") String t, @QueryParam("data") String da, @QueryParam("professor") String prof, @QueryParam("password") String pwd) {
+    public String update(@PathParam("eventID") String eventID, EventPayload payload) {
 
         int i = 0;
 
-        if (de != null) {
+        if (payload.description != null) {
             i++;
         }
-        if (t != null) {
+        if (payload.type != null) {
             i++;
         }
-        if (da != null) {
+        if (payload.date != null) {
             i++;
         }
 
-        if (prof == null) {
+        if (payload.professor == null) {
             return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
         }
-        if (pwd == null) {
+        if (payload.password == null) {
             return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
         }
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
-        MongoCursor<Document> results = professors.find(Filters.eq("username", prof)).iterator();
+        MongoCursor<Document> results = professors.find(Filters.eq("username", payload.professor)).iterator();
 
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", prof))).iterator();
+        MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", payload.professor))).iterator();
 
-        if (results.hasNext() && results.next().get("pwd").equals(pwd)) {
+        if (results.hasNext() && results.next().get("pwd").equals(payload.password)) {
             //QUI SI MODIFICA, Se si modifica si deve fare un controllo se l'evento è del prof
             if (result2.hasNext()) {
 
@@ -133,20 +137,20 @@ public class Event {
                 }
                 Bson filter = Filters.eq("_id", eventID);
 
-                if (de != null) {
-                    Bson push = Updates.set("description", de);
+                if (payload.description != null) {
+                    Bson push = Updates.set("description", payload.description);
                     collection.updateOne(filter, push);
                 }
-                if (t != null) {
-                    Bson push = Updates.set("type", t);
+                if (payload.type != null) {
+                    Bson push = Updates.set("type", payload.type);
                     collection.updateOne(filter, push);
                 }
-                if (da != null) {
-                    Bson push = Updates.set("data", da);
+                if (payload.date != null) {
+                    Bson push = Updates.set("data", payload.date);
                     collection.updateOne(filter, push);
                 }
 
-                return "{\"status\":\"error\", \"description\":\"Event modified\"}";
+                return "{\"status\":\"ok\", \"description\":\"Event modified\"}";
 
             }
 
@@ -157,17 +161,17 @@ public class Event {
 
                     Document document = new Document()
                             .append("_id", eventID)
-                            .append("type", t)
-                            .append("data", da)
-                            .append("description", de)
-                            .append("professor", prof)
+                            .append("type", payload.type)
+                            .append("data", payload.date)
+                            .append("description", payload.description)
+                            .append("professor", payload.professor)
                             .append("participants", students)
                             .append("not_confirmed", studentsToBeConfirmed);
 
                     collection.insertOne(document);
                     return "{\"status\":\"ok\"}";
                 } else {
-                    return "{\"status\":\"error\", \"description\":\"Event not creat because mandatory field\"}";
+                    return "{\"status\":\"error\", \"description\":\"Event not created because mandatory field is missing\"}";
                 }
 
             } else {
@@ -254,11 +258,11 @@ public class Event {
             filter.append("_id", new BsonString(eventID));
             filter.append("professor", new BsonString(payload.username));
 
-            Bson push = Updates.push("not_confirmed", payload.student);
-            Bson pull = Updates.pull("participants", payload.student);
+            Bson push = Updates.pull("not_confirmed", payload.student);
+            Bson pull = Updates.push("participants", payload.student);
 
             if (events.updateOne(filter, push).getModifiedCount() == 0 || events.updateOne(filter, pull).getModifiedCount() == 0) {
-                return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
+                return "{\"status\":\"error\", \"description\":\"registration error\"}";
             } else {
                 return "{\"status\":\"ok\"}";
             }

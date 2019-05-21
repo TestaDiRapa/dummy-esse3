@@ -17,8 +17,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 
 import com.mongodb.client.model.Updates;
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import payloads.ConfirmationPayload;
@@ -278,38 +276,29 @@ public class Event {
     }
 
     @DELETE
-    @Path("{eventID}")
+    @Path("/{eventID}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String eventDelete(@PathParam("eventID") String eventID, DeletionPayload payload) {
-        if (payload.username == null) {
+    public String eventDelete(@PathParam("eventID") String eventID, @QueryParam("username") String username, @QueryParam("password") String pwd) {
+        if (username == null) {
             return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
         }
-        if (payload.pwd == null) {
+        if (pwd == null) {
             return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
         }
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
-        MongoCursor<Document> results = professors.find(Filters.and(Filters.eq("username", payload.username),
-                                                                    Filters.eq("pwd", payload.pwd))).iterator();
+        MongoCursor<Document> results = professors.find(Filters.and(Filters.eq("username", username),
+                                                                    Filters.eq("pwd", pwd))).iterator();
         if (results.hasNext()) {
-            
                 MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-            MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", payload.username))).iterator();
 
-        if(result2.hasNext()){
-            collection.deleteOne( result2.next() );
-            
-            
-            return "{\"status\":\"ok\"}";
+            if(collection.deleteOne(and(eq("_id", eventID), eq("professor", username))).getDeletedCount() > 0){
+                return "{\"status\":\"ok\"}";
+            }
+            else return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
         }
-
-          else      return "{\"status\":\"error\", \"description\":\"no event with the specified id or professor\"}";
-           
-            
-        } else {
-            return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
-        }
+        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
 
     }
 

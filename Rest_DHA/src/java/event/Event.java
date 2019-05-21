@@ -10,8 +10,6 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.elemMatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +25,8 @@ import payloads.ConfirmationPayload;
 import payloads.DeletionPayload;
 import payloads.EventPayload;
 import payloads.StandardUserPayload;
+
+import static com.mongodb.client.model.Filters.*;
 
 /**
  * REST Web Service
@@ -219,11 +219,15 @@ public class Event {
 
             MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
 
-            Bson filter = Filters.eq("_id", eventID);
+            Bson filter = and(
+                    eq("_id", eventID),
+                    not(elemMatch("not_confirmed", eq(payload.username))),
+                    not(elemMatch("participants", eq(payload.username)))
+            );
             Bson push = Updates.push("not_confirmed", payload.username);
 
             if (events.updateOne(filter, push).getModifiedCount() == 0) {
-                return "{\"status\":\"error\", \"description\":\"no event with the specified id\"}";
+                return "{\"status\":\"error\", \"description\":\"registration error\"}";
             } else {
                 return "{\"status\":\"ok\"}";
             }
@@ -254,9 +258,11 @@ public class Event {
 
             MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
 
-            BsonDocument filter = new BsonDocument();
-            filter.append("_id", new BsonString(eventID));
-            filter.append("professor", new BsonString(payload.username));
+            Bson filter = and(
+                    eq("_id", eventID),
+                    eq("professor", payload.username),
+                    not(elemMatch("not_confirmed", eq(payload.username)))
+            );
 
             Bson push = Updates.pull("not_confirmed", payload.student);
             Bson pull = Updates.push("participants", payload.student);
@@ -271,8 +277,8 @@ public class Event {
         }
     }
 
-    @POST
-    @Path("{eventID}/delete")
+    @DELETE
+    @Path("{eventID}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String eventDelete(@PathParam("eventID") String eventID, DeletionPayload payload) {
@@ -284,11 +290,12 @@ public class Event {
         }
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
-        MongoCursor<Document> results = professors.find(Filters.eq("username", payload.username)).iterator();
-        if (results.hasNext() && results.next().get("pwd").equals(payload.pwd)) {
+        MongoCursor<Document> results = professors.find(Filters.and(Filters.eq("username", payload.username),
+                                                                    Filters.eq("pwd", payload.pwd))).iterator();
+        if (results.hasNext()) {
             
-             MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
-        MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", payload.username))).iterator();
+                MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("events");
+            MongoCursor<Document> result2 = collection.find(and(Filters.eq("_id", eventID), Filters.eq("professor", payload.username))).iterator();
 
         if(result2.hasNext()){
             collection.deleteOne( result2.next() );
@@ -306,4 +313,42 @@ public class Event {
 
     }
 
+    @POST
+    @Path("{eventID}/retract")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String retractParticipation(@PathParam("eventID") String eventID,  DeletionPayload payload){
+        if (payload.username == null) {
+            return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        }
+        if (payload.pwd == null) {
+            return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        }
+
+        MongoCollection<Document> students = mongoClient.getDatabase("esse3").getCollection("students");
+        MongoCursor<Document> results = students.find(Filters.and(Filters.eq("username", payload.username),
+                Filters.eq("pwd", payload.pwd))).iterator();
+
+        if(results.hasNext()){
+            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
+
+            Bson filter = and(
+                    eq("_id", eventID),
+                    or(
+                            not(elemMatch("not_confirmed", eq(payload.username))),
+                            not(elemMatch("participants", eq(payload.username)))
+                    )
+
+            );
+
+            if (events.updateOne(filter, Updates.pull("not_confirmed", payload.username)).getModifiedCount() == 1 ||
+                    events.updateOne(filter, Updates.pull("participants", payload.username)).getModifiedCount() == 1) {
+                return "{\"status\":\"ok\", \"description\":\"Registration withdrawn successful\"}";
+            } else {
+                return "{\"status\":\"error\"}";
+            }
+        }
+
+        return "{\"status\":\"error\", \"description\":\"login error\"}";
+    }
 }

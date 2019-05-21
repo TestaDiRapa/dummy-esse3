@@ -1,0 +1,118 @@
+Base path: webresources/
+
+EVENT:
+ - GET /event/ 
+	DESCRIPTION:	Returns all the events
+	PARAM: 		None
+	PAYLOAD: 	None
+	PAYLOAD FORMAT:	None
+	RETURNS: 	The list of all the events
+	RETURN TYPE: 	application/json
+
+ - GET /event/{eventID}
+	DESCRIPTION:	Returns the description of an event
+	PARAM: 		[eventID] the ID of the event
+	PAYLOAD:	None
+	PAYLOAD FORMAT:	None
+	RETURNS: 	The description of the event with the specified ID or an error
+	RETURN TYPE:	application/json
+
+ - PUT /event/{eventID}
+	DESCRIPTION:	Creates or modifies (if the ID already exists) an event
+	PARAM:		[eventID] the ID of the event
+	PAYLOAD:	[professor] the username of the professor
+			[password] the password
+			[type] the type of the event
+			[date] the date of the event
+			[description] the description of the event
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A success or error message
+	RETURN TYPE:	application/json
+
+ - DELETE /event/{eventID}
+	DESCRIPTION: 	Deletes an event
+	PARAM:		[eventID] the ID of the event
+	PAYLOAD:	[username] the professor's username
+			[password] the professor's password
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A success or error message
+	RETURN TYPE:	application/json
+
+ - GET /event/{eventID}/participants
+	DESCRIPTION:	Shows all the confirmed participants of an event
+	PARAM:		[eventID] the ID of the event
+	PAYLOAD:	None
+	PAYLOAD FORMAT:	None
+	RETURNS:	A list containing all the confirmed participants of an event
+	RETURN TYPE:	application/json
+
+ - POST /event/{eventID}/participate
+	DESCRIPTION: 	Allow a student to participate to an event
+	PARAM:		[eventID] the ID of the event
+	PAYLOAD:	[username] the student's username
+			[pwd] the student's password
+	PAYLOAD FORMAT: application/json
+	RETURNS: 	A success or error message
+	RETURN TYPE:	application/json
+
+ - POST /event/{eventID}/confirmstudent
+	DESCRIPTION:	Allow a professor to confirm a student participation to an event
+	PARAM:		[eventID] the ID of the event
+	PAYLOAD:	[username] the professor's username
+			[pwd] the professor's password
+			[student] the student's username
+	PAYLOAD FORMAT: application/json
+	RETURNS: 	A success or error message
+	RETURN TYPE:	application/json	
+
+ - POST /event/{eventID}/retract
+	DESCRIPTION: 	Allow a student to withdraw its participation to an event
+	PARAM:		[eventID] the ID of the event
+	PAYLOAD:	[username] the student's username
+			[pwd] the student's password
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A success or error message
+	RETURN TYPE:	application/json
+
+
+PROFESSOR:
+ - PUT /professor/register
+	DESCRIPTION: 	Allow the registration of a professor
+	PARAM:		None
+	PAYLOAD:	[name] the professor's name
+			[surname] the professor's surname
+			[username] a chosen username
+			[pwd] a chosen password
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A success or error message
+	RETURN TYPE:	application/json
+
+ - GET /professor/{username}/myevents?password={password}
+	DESCRIPTION: 	Allow a professor to see the list of their events
+	PARAM:		[username] the professor's username
+			[password] the professor's password
+	PAYLOAD: 	None
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A list of events
+	RETURN TYPE:	application/json
+
+STUDENT:
+ - PUT /student/register
+	DESCRIPTION: 	Allow the registration of a student
+	PARAM:		None
+	PAYLOAD:	[name] the student's name
+			[surname] the student's surname
+			[username] a chosen username
+			[pwd] a chosen password
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A success or error message
+	RETURN TYPE:	application/json
+
+ - GET /student/{username}/myevents?password={password}
+	DESCRIPTION: 	Allow a student to see the list of event he's registered to
+	PARAM:		[username] the student's username
+			[password] the student's password
+	PAYLOAD: 	None
+	PAYLOAD FORMAT: application/json
+	RETURNS:	A list of events
+	RETURN TYPE:	application/json

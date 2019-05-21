@@ -221,8 +221,8 @@ public class Event {
 
             Bson filter = and(
                     eq("_id", eventID),
-                    not(elemMatch("not_confirmed", eq(payload.username))),
-                    not(elemMatch("participants", eq(payload.username)))
+                    not(eq("not_confirmed", payload.username)),
+                    not(eq("participants", payload.username))
             );
             Bson push = Updates.push("not_confirmed", payload.username);
 

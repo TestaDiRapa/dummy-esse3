@@ -10,14 +10,13 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
+
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
 import javax.ws.rs.core.MediaType;
+
+import org.bson.BsonString;
 import org.bson.Document;
 import payloads.StandardUserPayload;
 
@@ -77,6 +76,35 @@ public class Student {
         return "{\"status\":\"ok\"}";
         
     }
-    
+
+    @GET
+    @Path("{username}/myevents")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String myEvents(@PathParam("username") String username, @QueryParam("password") String password){
+
+        if(username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(password == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+
+        MongoCollection<Document> students = mongoClient.getDatabase("esse3").getCollection("students");
+
+        MongoCursor<Document> results = students.find(Filters.and(Filters.eq("username", username), Filters.eq("pwd", password))).iterator();
+        if(results.hasNext()){
+
+            MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
+            String ret = "{\"status\":\"ok\", \"results\":[";
+            //results = events.find(Filters.or(Filters.elemMatch("not_confirmed", Filters.eq(username)), Filters.elemMatch("participants", Filters.eq(username)))).iterator();
+            results = events.find(Filters.or(Filters.eq("participants", new BsonString(username)), Filters.eq("not_confirmed", new BsonString(username)))).iterator();
+
+            while(results.hasNext()){
+                ret += results.next().toJson();
+                if(results.hasNext()) ret+= ',';
+            }
+
+            ret += "]}";
+            return ret;
+        }
+        else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+    }
+
     
 }

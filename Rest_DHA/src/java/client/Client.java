@@ -82,32 +82,75 @@ public class Client {
         if(type.equals("P")){
             
               do {
-             System.out.println("Username:"+username+"\n"
+             System.out.println("\nUsername:"+username+"\n"
                     + "MENU:\n"
                     + "1. Add event\n"
                     + "2. View events\n"
-                    + "3. Delete one event\n"
-                    + "4. Modify one event\n"
+                    + "3. Delete an event\n"
+                    + "4. Modify an event\n"
                     + "5. View participants of an event\n"
                     + "6. Confirm participant"
                     + "7. Exit");
             choice = keyboard.nextInt();
-        } while (choice < 0 || choice > 3);
+        } while (choice < 0 || choice > 7);
             
+              
+              if(choice==1){
+                  
+              }
+              if(choice==2){
+                  
+              }
+              if(choice==3){
+                  
+              }
+              if(choice==4){
+                  
+              }
+              if(choice==5){
+                  
+              }
+              if(choice==6){
+                  
+              }
+              if(choice==7){
+                  System.exit(0);
+              }
+              
         }
         //STUDENT
         else{
               do {
-            System.out.println("Username:"+username+"\n"
+            System.out.println("\nUsername:"+username+"\n"
                     + "MENU:\n"
                     + "1. View list of docent\n"
                     + "2. View events\n"
-                    + "3. View description of one event\n"
+                    + "3. View description of an event\n"
                     + "4. Delete participation\n"
                     + "5. Request Participation\n"
                     + "6. Exit");
             choice = keyboard.nextInt();
-        } while (choice < 0 || choice > 3);
+        } while (choice < 0 || choice > 6);
+              
+              
+              if(choice==1){
+                  
+              }
+              if(choice==2){
+                  
+              }
+              if(choice==3){
+                  
+              }
+              if(choice==4){
+                  
+              }
+              if(choice==5){
+                  
+              }
+              if(choice==6){
+                  System.exit(0);
+              }
         }
         
 

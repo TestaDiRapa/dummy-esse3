@@ -6,10 +6,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import payloads.IdentificationPayload;
 import payloads.StandardUserPayload;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
 
 @Path("professor")
 public class Professor {
@@ -28,7 +32,7 @@ public class Professor {
 
         MongoCollection<Document> collection = mongoClient.getDatabase("esse3").getCollection("professors");
 
-        MongoCursor<Document> result = collection.find(Filters.eq("username", payload.username)).iterator();
+        MongoCursor<Document> result = collection.find(eq("username", payload.username)).iterator();
         if(result.hasNext()) return "{\"status\":\"error\", \"description\":\"Username already exists\"}";
 
         Document document = new Document()
@@ -50,11 +54,11 @@ public class Professor {
 
         MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
 
-        MongoCursor<Document> results = professors.find(Filters.eq("username", username)).iterator();
+        MongoCursor<Document> results = professors.find(eq("username", username)).iterator();
         if(results.hasNext() && results.next().get("pwd").equals(password)){
             MongoCollection<Document> events = mongoClient.getDatabase("esse3").getCollection("events");
             String ret = "{\"status\":\"ok\", \"results\":[";
-            results = events.find(Filters.eq("professor", username)).iterator();
+            results = events.find(eq("professor", username)).iterator();
             while(results.hasNext()){
                 ret += results.next().toString();
                 if(results.hasNext()) ret+= ',';
@@ -63,6 +67,22 @@ public class Professor {
             return ret;
         }
         else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
+    }
+
+    @GET
+    @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String login(IdentificationPayload payload){
+        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
+
+        MongoCursor<Document> results = professors.find(and(eq("username", payload.username),
+                                                            eq("pwd", payload.pwd))).iterator();
+
+        if(results.hasNext()) return "{\"status\":\"ok\"}";
+        else return "{\"status\":\"error\", \"description\":\"Incorrect username or password!\"}";
     }
 
 }

@@ -18,7 +18,11 @@ import javax.ws.rs.core.MediaType;
 
 import org.bson.BsonString;
 import org.bson.Document;
+import payloads.IdentificationPayload;
 import payloads.StandardUserPayload;
+
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
 
 /**
  * REST Web Service
@@ -106,5 +110,19 @@ public class Student {
         else return "{\"status\":\"error\", \"description\":\"incorrect username or password\"}";
     }
 
-    
+    @GET
+    @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String login(IdentificationPayload payload){
+        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+        MongoCollection<Document> students = mongoClient.getDatabase("esse3").getCollection("students");
+
+        MongoCursor<Document> results = students.find(and(eq("username", payload.username),
+                eq("pwd", payload.pwd))).iterator();
+
+        if(results.hasNext()) return "{\"status\":\"ok\"}";
+        else return "{\"status\":\"error\", \"description\":\"Incorrect username or password!\"}";
+    }
 }

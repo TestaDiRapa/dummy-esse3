@@ -20,7 +20,7 @@ import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import payloads.ConfirmationPayload;
-import payloads.DeletionPayload;
+import payloads.IdentificationPayload;
 import payloads.EventPayload;
 import payloads.StandardUserPayload;
 
@@ -306,7 +306,7 @@ public class Event {
     @Path("{eventID}/retract")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String retractParticipation(@PathParam("eventID") String eventID,  DeletionPayload payload){
+    public String retractParticipation(@PathParam("eventID") String eventID,  IdentificationPayload payload){
         if (payload.username == null) {
             return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
         }

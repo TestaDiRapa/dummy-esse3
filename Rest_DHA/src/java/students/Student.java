@@ -114,13 +114,13 @@ public class Student {
     @Path("login")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String login(IdentificationPayload payload){
-        if(payload.username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
-        if(payload.pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
+    public String login(@QueryParam("username") String username, @QueryParam("password") String pwd){
+        if(username == null) return "{\"status\":\"error\", \"description\":\"username is a mandatory field\"}";
+        if(pwd == null) return "{\"status\":\"error\", \"description\":\"password is a mandatory field\"}";
         MongoCollection<Document> students = mongoClient.getDatabase("esse3").getCollection("students");
 
-        MongoCursor<Document> results = students.find(and(eq("username", payload.username),
-                eq("pwd", payload.pwd))).iterator();
+        MongoCursor<Document> results = students.find(and(eq("username", username),
+                                                            eq("pwd", pwd))).iterator();
 
         if(results.hasNext()) return "{\"status\":\"ok\"}";
         else return "{\"status\":\"error\", \"description\":\"Incorrect username or password!\"}";

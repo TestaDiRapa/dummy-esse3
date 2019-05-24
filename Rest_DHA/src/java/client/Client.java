@@ -40,9 +40,10 @@ public class Client {
         do {
             System.out.println("MENU:\n"
                     + "1. Login\n"
-                    + "2. Register");
+                    + "2. Register\n"
+                    + "3. Exit");
             choice = keyboard.nextInt();
-        } while (choice < 0 || choice > 2);
+        } while (choice < 0 || choice > 3);
 
         if (choice == 1) {
             try {
@@ -72,6 +73,9 @@ public class Client {
                 System.out.println("Error during registration!");
                 System.exit(0);
             }
+        }
+        else if (choice == 3) {
+            System.exit(0);
         }
 
     }

@@ -45,6 +45,7 @@ public class Client {
             choice = keyboard.nextInt();
         } while (choice < 0 || choice > 3);
 
+        
         if (choice == 1) {
             try {
                 String response = login(keyboard, type);
@@ -77,6 +78,38 @@ public class Client {
         else if (choice == 3) {
             System.exit(0);
         }
+        //PROFESSOR
+        if(type.equals("P")){
+            
+              do {
+             System.out.println("Username:"+username+"\n"
+                    + "MENU:\n"
+                    + "1. Add event\n"
+                    + "2. View events\n"
+                    + "3. Delete one event\n"
+                    + "4. Modify one event\n"
+                    + "5. View participants of an event\n"
+                    + "6. Confirm participant"
+                    + "7. Exit");
+            choice = keyboard.nextInt();
+        } while (choice < 0 || choice > 3);
+            
+        }
+        //STUDENT
+        else{
+              do {
+            System.out.println("Username:"+username+"\n"
+                    + "MENU:\n"
+                    + "1. View list of docent\n"
+                    + "2. View events\n"
+                    + "3. View description of one event\n"
+                    + "4. Delete participation\n"
+                    + "5. Request Participation\n"
+                    + "6. Exit");
+            choice = keyboard.nextInt();
+        } while (choice < 0 || choice > 3);
+        }
+        
 
     }
 

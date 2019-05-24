@@ -4,9 +4,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Filters;
 import org.bson.Document;
-import payloads.IdentificationPayload;
 import payloads.StandardUserPayload;
 
 import javax.ws.rs.*;
@@ -19,6 +17,22 @@ import static com.mongodb.client.model.Filters.eq;
 public class Professor {
 
     public MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://dhagroup:glassfish@45.76.47.94/esse3"));
+
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getProfessors(){
+        MongoCollection<Document> professors = mongoClient.getDatabase("esse3").getCollection("professors");
+        MongoCursor<Document> results = professors.find().iterator();
+        String ret = "{\"status\":\"ok\", \"results\":[";
+        while(results.hasNext()){
+            Document tmp = results.next();
+            ret += tmp.toString();
+            if(results.hasNext()) ret += ",";
+        }
+        ret += "]}";
+        return ret;
+    }
 
     @PUT
     @Path("register")

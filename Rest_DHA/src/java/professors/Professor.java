@@ -26,8 +26,7 @@ public class Professor {
         MongoCursor<Document> results = professors.find().iterator();
         String ret = "{\"status\":\"ok\", \"results\":[";
         while(results.hasNext()){
-            Document tmp = results.next();
-            ret += tmp.toString();
+            ret += results.next().toJson();
             if(results.hasNext()) ret += ",";
         }
         ret += "]}";
@@ -74,7 +73,7 @@ public class Professor {
             String ret = "{\"status\":\"ok\", \"results\":[";
             results = events.find(eq("professor", username)).iterator();
             while(results.hasNext()){
-                ret += results.next().toString();
+                ret += results.next().toJson();
                 if(results.hasNext()) ret+= ',';
             }
             ret += "]}";

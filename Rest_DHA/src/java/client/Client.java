@@ -1,6 +1,7 @@
 package client;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -14,7 +15,7 @@ import java.util.Scanner;
 
 public class Client {
 
-    private static final String BASE_URL = "http://localhost:8080/Rest_DHA/webresources/";
+    private static final String BASE_URL = "http://localhost:8080/dummy_esse3_war_exploded/webresources/";
     private static final String STUDENT = "student";
     private static final String PROFESSOR = "professor";
     private static String username;
@@ -76,9 +77,9 @@ public class Client {
                 System.exit(0);
             }
         } while (!continua);
+
         //PROFESSOR
         if (type.equals(PROFESSOR)) {
-
             do {
                 System.out.println("\nUsername:" + username + "\n"
                         + "MENU:\n"
@@ -111,11 +112,8 @@ public class Client {
                 }
                 if (choice == 2) {
                     try {
-                        String response = viewEvents();
-                                                    System.out.println(response);
-                        
+                        viewEvents();
                     } catch (IOException e) {
-                        e.printStackTrace();
                         System.out.println("Error");
                     }
                 }
@@ -166,34 +164,141 @@ public class Client {
             do {
                 System.out.println("\nUsername:" + username + "\n"
                         + "MENU:\n"
-                        + "1. View list of docent\n"
+                        + "1. View list of professors\n"
                         + "2. View events\n"
                         + "3. View description of an event\n"
-                        + "4. Delete participation\n"
+                        + "4. Retract participation\n"
                         + "5. Request Participation\n"
                         + "6. Exit");
                 choice = keyboard.nextInt();
 
                 if (choice == 1) {
+                    try {
+                        viewProfessors();
+                    } catch (IOException e) {
+                        System.out.println("Error!");
+                    }
+                }
+                else if (choice == 2) {
+                    try {
+                        viewEvents();
+                    } catch (IOException e) {
+                        System.out.println("Error!");
+                    }
+                }
+                else if (choice == 3) {
+                    System.out.print("Insert event ID: ");
+                    String eventID = keyboard.next();
+                    try {
+                        viewEventDescription(eventID);
+                    } catch (IOException e) {
+                        System.out.println("Error!");
+                    }
 
                 }
-                if (choice == 2) {
-
+                else if (choice == 4) {
+                    System.out.print("Insert event ID: ");
+                    String eventID = keyboard.next();
+                    try {
+                        retractParticipation(eventID);
+                    } catch (IOException e) {
+                        System.out.println("Error!");
+                    }
                 }
-                if (choice == 3) {
-
+                else if (choice == 5) {
+                    System.out.print("Insert event ID: ");
+                    String eventID = keyboard.next();
+                    try {
+                        participate(eventID);
+                    } catch (IOException e) {
+                        System.out.println("Error!");
+                    }
                 }
-                if (choice == 4) {
-
-                }
-                if (choice == 5) {
-
-                }
-                if (choice == 6) {
+                else if (choice == 6) {
                     System.exit(0);
                 }
-            } while (choice < 0 || choice > 6);
+            } while (choice > 0 || choice < 6);
         }
+
+    }
+
+    private static void printArrayOfJson(JsonArray array) {
+        for(JsonElement el : array){
+            for(String key : el.getAsJsonObject().keySet()){
+                if(!key.equals("pwd")) System.out.println(key + ": "+el.getAsJsonObject().get(key)+"\n");
+            }
+        }
+
+    }
+
+    private static void retractParticipation(String eventID) throws IOException {
+        String payload = "{\"username\":\""+username+"\", \"pwd\":\""+password+"\"}";
+        URL url = new URL(BASE_URL + "event/" + eventID + "/retract");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setDoInput(true);
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
+        writer.write(payload);
+        writer.close();
+
+        JsonObject response = getResponseAsJSON(connection);
+        String status = response.get("status").getAsString();
+        if(status.equals("ok")){
+            System.out.println("Registration retracted successfully!");
+        }
+        else System.out.println("Error in retracting!");
+    }
+
+    private static void participate(String eventID) throws IOException {
+        String payload = "{\"username\":\""+username+"\", \"pwd\":\""+password+"\"}";
+        URL url = new URL(BASE_URL + "event/" + eventID + "/participate");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setDoInput(true);
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
+        writer.write(payload);
+        writer.close();
+
+        JsonObject response = getResponseAsJSON(connection);
+        String status = response.get("status").getAsString();
+        if(status.equals("ok")){
+            System.out.println("Registration successful!");
+        }
+        else System.out.println(response.get("description").getAsString());
+    }
+
+    private static void viewEventDescription(String eventID) throws IOException {
+        URL url = new URL(BASE_URL + "event/"+eventID);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        JsonObject response = getResponseAsJSON(connection);
+        String status = response.get("status").getAsString();
+        if(status.equals("ok")) {
+            System.out.println("Event ID: " + eventID + "\nDescription: "+response.get("description").getAsString());
+        }
+        else {
+            System.out.println("Error: "+response.get("description").getAsString());
+        }
+    }
+
+    private static void viewProfessors() throws IOException {
+        URL url = new URL(BASE_URL + "professor/");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        JsonObject response = getResponseAsJSON(connection);
+        String status = response.get("status").getAsString();
+        if(status.equals("ok")){
+            printArrayOfJson(response.get("results").getAsJsonArray());
+        }
+        else System.out.println("Error!");
 
     }
 
@@ -309,25 +414,17 @@ public class Client {
 
     }
 
-    private static String viewEvents() throws IOException {
+    private static void viewEvents() throws IOException {
 
         URL url = new URL(BASE_URL + "event");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         JsonObject response = getResponseAsJSON(connection);
-        JsonArray s = response.get("events").getAsJsonArray();
-        String res="";
-        int i;
-        for(i=0;i<s.size();i++){
-            res+= s.get(i)+"\n";
+
+        if(response.get("status").getAsString().equals("ok")){
+            printArrayOfJson(response.get("events").getAsJsonArray());
         }
-        
-        String status = response.get("status").getAsString();
-        if (status.equals("ok")) {
-            return res;
-        } else {
-            return response.get("description").getAsString();
-        }
+        else System.out.println("Error in getting the events!");
     }
 
     private static String deleteEvent(Scanner keyboard) throws IOException {

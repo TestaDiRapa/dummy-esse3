@@ -1,5 +1,6 @@
 package client;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -36,175 +37,163 @@ public class Client {
         }
 
         int choice;
-        boolean continua=false;
+        boolean continua = false;
         do {
             System.out.println("MENU:\n"
                     + "1. Login\n"
                     + "2. Register\n"
                     + "3. Exit");
+            
             choice = keyboard.nextInt();
-        
 
-        
-        if (choice == 1) {
-            try {
-                String response = login(keyboard);
-                if (response.equals("")) {
-                    System.out.println("Login successful!");
-                    continua=true;
-                } else {
-                    System.out.println("Error during login! Message: " + response);
+            if (choice == 1) {
+                try {
+                    String response = login(keyboard);
+                    if (response.equals("")) {
+                        System.out.println("Login successful!");
+                        continua = true;
+                    } else {
+                        System.out.println("Error during login! Message: " + response);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Error during login!");
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during login!");
-            }
-        } else if (choice == 2) {
-            try {
-                String response = register(keyboard);
-                if (response.equals("")) {
-                    System.out.println("Registration successful!");
-                    continua=true;
-                } else {
-                    System.out.println("Error during registration! Message: " + response);
+            } else if (choice == 2) {
+                try {
+                    String response = register(keyboard);
+                    if (response.equals("")) {
+                        System.out.println("Registration successful!");
+                        continua = true;
+                    } else {
+                        System.out.println("Error during registration! Message: " + response);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Error during registration!");
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during registration!");
+            } else if (choice == 3) {
+                System.exit(0);
             }
-        }
-        else if (choice == 3) {
-            System.exit(0);
-        }
         } while (!continua);
         //PROFESSOR
-        if(type.equals(PROFESSOR)){
-            
-              do {
-             System.out.println("\nUsername:"+username+"\n"
-                    + "MENU:\n"
-                    + "1. Add event\n"
-                    + "2. View events\n"
-                    + "3. Delete an event\n"
-                    + "4. Modify an event\n"
-                    + "5. View participants of an event\n"
-                    + "6. Confirm participant\n"
-                    + "7. Exit");
-            choice = keyboard.nextInt();
-        
-            
-              
-              if(choice==1 || choice==4){
-                   try {
-                String response = addEvent(keyboard);
-                if (response.equals("")) {
-                    if(choice==1)
-                    System.out.println("Event added!");
-                    else System.out.println("Event Modified");
-                } else {
-                    System.out.println("Error during the creation of event! Message: " + response);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during creation of event!");
-            }
-                   
-              }
-              if(choice==2){
-                  try {
-                String response = viewEvents();
-                if (response.equals("")) {
-                    System.out.println("View Events!");
-                } else {
-                    System.out.println("Error during the view of events! Message: " + response);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during the view of events");
-            }
-              }
-              if(choice==3){
-                   try {
-                String response = deleteEvent(keyboard);
-                if (response.equals("")) {
-                    System.out.println("Event deleted!");
-                } else {
-                    System.out.println("Error during the deletion of event! Message: " + response);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during the deletion of event");
-            }
-              }
-              
-              if(choice==5){
+        if (type.equals(PROFESSOR)) {
+
+            do {
+                System.out.println("\nUsername:" + username + "\n"
+                        + "MENU:\n"
+                        + "1. Add event\n"
+                        + "2. View events\n"
+                        + "3. Delete an event\n"
+                        + "4. Modify an event\n"
+                        + "5. View participants of an event\n"
+                        + "6. Confirm participant\n"
+                        + "7. Exit");
+                choice = keyboard.nextInt();
+
+                if (choice == 1 || choice == 4) {
                     try {
-                String response = participant(keyboard);
-                if (response.equals("")) {
-                    System.out.println("OK!");
-                } else {
-                    System.out.println("Error during the view of participant! Message: " + response);
+                        String response = addEvent(keyboard);
+                        if (response.equals("")) {
+                            if (choice == 1) {
+                                System.out.println("Event added!");
+                            } else {
+                                System.out.println("Event Modified");
+                            }
+                        } else {
+                            System.out.println("Error during the creation of event! Message: " + response);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Error during creation of event!");
+                    }
+
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during the view of participants");
-            }
-              }
-              if(choice==6){
-                  try {
-                String response = confirmParticipant(keyboard);
-                if (response.equals("")) {
-                    System.out.println("Student confirmed!");
-                } else {
-                    System.out.println("Error during the confirmation! Message: " + response);
+                if (choice == 2) {
+                    try {
+                        String response = viewEvents();
+                                                    System.out.println(response);
+                        
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Error");
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error during the confirmation");
-            }
-              }
-              if(choice==7){
-                  System.exit(0);
-              }
-              
-              } while (true);
+                if (choice == 3) {
+                    try {
+                        String response = deleteEvent(keyboard);
+                        if (response.equals("")) {
+                            System.out.println("Event deleted!");
+                        } else {
+                            System.out.println("Error during the deletion of event! Message: " + response);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Error during the deletion of event");
+                    }
+                }
+
+                if (choice == 5) {
+                    try {
+                        String response = participant(keyboard);
+                         System.out.println( response);
+                        
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                       
+                    }
+                }
+                if (choice == 6) {
+                    try {
+                        String response = confirmParticipant(keyboard);
+                        if (response.equals("")) {
+                            System.out.println("Student confirmed!");
+                        } else {
+                            System.out.println("Error during the confirmation! Message: " + response);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Error during the confirmation");
+                    }
+                }
+                if (choice == 7) {
+                    System.exit(0);
+                }
+
+            } while (true);
+        } //STUDENT
+        else {
+            do {
+                System.out.println("\nUsername:" + username + "\n"
+                        + "MENU:\n"
+                        + "1. View list of docent\n"
+                        + "2. View events\n"
+                        + "3. View description of an event\n"
+                        + "4. Delete participation\n"
+                        + "5. Request Participation\n"
+                        + "6. Exit");
+                choice = keyboard.nextInt();
+
+                if (choice == 1) {
+
+                }
+                if (choice == 2) {
+
+                }
+                if (choice == 3) {
+
+                }
+                if (choice == 4) {
+
+                }
+                if (choice == 5) {
+
+                }
+                if (choice == 6) {
+                    System.exit(0);
+                }
+            } while (choice < 0 || choice > 6);
         }
-        //STUDENT
-        else{
-              do {
-            System.out.println("\nUsername:"+username+"\n"
-                    + "MENU:\n"
-                    + "1. View list of docent\n"
-                    + "2. View events\n"
-                    + "3. View description of an event\n"
-                    + "4. Delete participation\n"
-                    + "5. Request Participation\n"
-                    + "6. Exit");
-            choice = keyboard.nextInt();
-        
-              
-              
-              if(choice==1){
-                  
-              }
-              if(choice==2){
-                  
-              }
-              if(choice==3){
-                  
-              }
-              if(choice==4){
-                  
-              }
-              if(choice==5){
-                  
-              }
-              if(choice==6){
-                  System.exit(0);
-              }
-              } while (choice < 0 || choice > 6);
-        }
-        
 
     }
 
@@ -278,12 +267,10 @@ public class Client {
         }
         return "Error";
     }
-    
-    
-    private static String addEvent(Scanner keyboard) throws IOException{
-        
-     
-        String eventID,description,typeEvent,date;
+
+    private static String addEvent(Scanner keyboard) throws IOException {
+
+        String eventID, description, typeEvent, date;
         System.out.print("Id Event: ");
         eventID = keyboard.next();
         System.out.print("Date: ");
@@ -292,11 +279,11 @@ public class Client {
         typeEvent = keyboard.next();
         System.out.print("Description: ");
         description = keyboard.next();
-        String payload="{\"professor\":\"" + username + "\",\"password\":\"" + password +"\",\"date\":\"" + date +
-                "\",\"type\":\"" + typeEvent +"\",\"description\":\"" + description + "\"}";
-        
+        String payload = "{\"professor\":\"" + username + "\",\"password\":\"" + password + "\",\"date\":\"" + date
+                + "\",\"type\":\"" + typeEvent + "\",\"description\":\"" + description + "\"}";
+
         try {
-            URL url = new URL(BASE_URL + "event/"+eventID);
+            URL url = new URL(BASE_URL + "event/" + eventID);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoInput(true);
@@ -319,33 +306,38 @@ public class Client {
             e.printStackTrace();
         }
         return "Error";
-        
+
     }
-    
-    private static String viewEvents() throws IOException{
-        
-         URL url = new URL(BASE_URL +"event");
+
+    private static String viewEvents() throws IOException {
+
+        URL url = new URL(BASE_URL + "event");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         JsonObject response = getResponseAsJSON(connection);
-        System.out.println(response);
+        JsonArray s = response.get("events").getAsJsonArray();
+        String res="";
+        int i;
+        for(i=0;i<s.size();i++){
+            res+= s.get(i)+"\n";
+        }
+        
         String status = response.get("status").getAsString();
         if (status.equals("ok")) {
-            return "";
+            return res;
         } else {
             return response.get("description").getAsString();
         }
     }
 
-    private static String deleteEvent(Scanner keyboard) throws IOException{
+    private static String deleteEvent(Scanner keyboard) throws IOException {
         String event;
         System.out.println("Event Id: ");
-        event=keyboard.next();
-        
-        
-         try {
-            URL url = new URL(BASE_URL + "event/"+event+"?username="+username+"&"
-                    + "password="+password);
+        event = keyboard.next();
+
+        try {
+            URL url = new URL(BASE_URL + "event/" + event + "?username=" + username + "&"
+                    + "password=" + password);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoInput(true);
@@ -353,7 +345,7 @@ public class Client {
             connection.setRequestMethod("DELETE");
             connection.setRequestProperty("Accept", "application/json");
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            
+
             JsonObject response = getResponseAsJSON(connection);
 
             String status = response.get("status").getAsString();
@@ -367,37 +359,38 @@ public class Client {
         }
         return "Error";
     }
-    
-    private static String participant(Scanner keyboard) throws IOException{
-        
+
+    private static String participant(Scanner keyboard) throws IOException {
+
         String event;
-         System.out.print("Id Event: ");
+        System.out.print("Id Event: ");
         event = keyboard.next();
-         URL url = new URL(BASE_URL +"event/"+event+"/participants");
+        URL url = new URL(BASE_URL + "event/" + event + "/participants");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         JsonObject response = getResponseAsJSON(connection);
-        System.out.println(response);
+      
+        String s = response.get("participants").getAsString();
+        
         String status = response.get("status").getAsString();
         if (status.equals("ok")) {
-            return "";
+            return s;
         } else {
             return response.get("description").getAsString();
         }
     }
-    
-    
-    private static String confirmParticipant(Scanner keyboard) throws IOException{
-        String event,student;
+
+    private static String confirmParticipant(Scanner keyboard) throws IOException {
+        String event, student;
         System.out.print("Id Event: ");
         event = keyboard.next();
         System.out.print("Student: ");
         student = keyboard.next();
         String payload;
-        payload="{\"username\":\"" + username + "\",\"pwd\":\"" + password + "\", \"student\":\""+student+"\"}";
-        
-         try {
-            URL url = new URL(BASE_URL + "event/" +event+ "/confirmstudent");
+        payload = "{\"username\":\"" + username + "\",\"pwd\":\"" + password + "\", \"student\":\"" + student + "\"}";
+
+        try {
+            URL url = new URL(BASE_URL + "event/" + event + "/confirmstudent");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoInput(true);
@@ -421,5 +414,5 @@ public class Client {
         }
         return "Error";
     }
-    
+
 }

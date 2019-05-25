@@ -94,11 +94,13 @@ public class Client {
         
             
               
-              if(choice==1){
+              if(choice==1 || choice==4){
                    try {
                 String response = addEvent(keyboard);
                 if (response.equals("")) {
-                    System.out.println("Added event!");
+                    if(choice==1)
+                    System.out.println("Event added!");
+                    else System.out.println("Event Modified");
                 } else {
                     System.out.println("Error during the creation of event! Message: " + response);
                 }
@@ -134,14 +136,32 @@ public class Client {
                 System.out.println("Error during the deletion of event");
             }
               }
-              if(choice==4){
-                  
-              }
+              
               if(choice==5){
-                  
+                    try {
+                String response = participant(keyboard);
+                if (response.equals("")) {
+                    System.out.println("OK!");
+                } else {
+                    System.out.println("Error during the view of participant! Message: " + response);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error during the view of participants");
+            }
               }
               if(choice==6){
-                  
+                  try {
+                String response = confirmParticipant(keyboard);
+                if (response.equals("")) {
+                    System.out.println("Student confirmed!");
+                } else {
+                    System.out.println("Error during the confirmation! Message: " + response);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error during the confirmation");
+            }
               }
               if(choice==7){
                   System.exit(0);
@@ -319,7 +339,7 @@ public class Client {
 
     private static String deleteEvent(Scanner keyboard) throws IOException{
         String event;
-        System.out.println("Event Id : ");
+        System.out.println("Event Id: ");
         event=keyboard.next();
         
         
@@ -347,4 +367,59 @@ public class Client {
         }
         return "Error";
     }
+    
+    private static String participant(Scanner keyboard) throws IOException{
+        
+        String event;
+         System.out.print("Id Event: ");
+        event = keyboard.next();
+         URL url = new URL(BASE_URL +"event/"+event+"/participants");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        JsonObject response = getResponseAsJSON(connection);
+        System.out.println(response);
+        String status = response.get("status").getAsString();
+        if (status.equals("ok")) {
+            return "";
+        } else {
+            return response.get("description").getAsString();
+        }
+    }
+    
+    
+    private static String confirmParticipant(Scanner keyboard) throws IOException{
+        String event,student;
+        System.out.print("Id Event: ");
+        event = keyboard.next();
+        System.out.print("Student: ");
+        student = keyboard.next();
+        String payload;
+        payload="{\"username\":\"" + username + "\",\"pwd\":\"" + password + "\", \"student\":\""+student+"\"}";
+        
+         try {
+            URL url = new URL(BASE_URL + "event/" +event+ "/confirmstudent");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
+            writer.write(payload);
+            writer.close();
+            JsonObject response = getResponseAsJSON(connection);
+
+            String status = response.get("status").getAsString();
+            if (status.equals("ok")) {
+                return "";
+            } else {
+                return response.get("description").getAsString();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Error";
+    }
+    
 }

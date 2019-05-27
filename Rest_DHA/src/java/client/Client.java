@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 public class Client {
 
-    private static final String BASE_URL = "http://localhost:8080/dummy_esse3_war_exploded/webresources/";
+    private static final String BASE_URL = "http://localhost:8080/Rest_DHA/webresources/";
     private static final String STUDENT = "student";
     private static final String PROFESSOR = "professor";
     private static String username;
